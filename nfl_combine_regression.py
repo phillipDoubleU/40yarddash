@@ -8,6 +8,7 @@ for wide receivers.
 import nfl_data_py as nfl
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import StandardScaler
 
 
 def main():
@@ -40,26 +41,33 @@ def main():
     X = wr_complete[["ht", "wt"]]
     y = wr_complete["forty"]
 
-    # Fit the linear regression model
+    # Normalize height and weight
+    scaler = StandardScaler()
+    X_scaled = scaler.fit_transform(X)
+
+    # Fit the linear regression model on normalized features
     model = LinearRegression()
-    model.fit(X, y)
+    model.fit(X_scaled, y)
 
     # Display results
-    print("\n=== Multi-Linear Regression Results ===")
+    print("\n=== Multi-Linear Regression Results (Normalized Features) ===")
     print(f"Target: 40-yard dash time (seconds)")
     print(f"Features: height (inches), weight (lbs)")
     print(f"Samples used: {len(wr_complete)}")
     print()
-    print(f"Intercept:            {model.intercept_:.6f}")
-    print(f"Coefficient (height): {model.coef_[0]:.6f}")
-    print(f"Coefficient (weight): {model.coef_[1]:.6f}")
-    print(f"R² score:             {model.score(X, y):.6f}")
+    print(f"Feature means:  height={scaler.mean_[0]:.2f} in, weight={scaler.mean_[1]:.2f} lbs")
+    print(f"Feature stddevs: height={scaler.scale_[0]:.2f} in, weight={scaler.scale_[1]:.2f} lbs")
     print()
-    print("Equation:")
+    print(f"Intercept:                      {model.intercept_:.6f}")
+    print(f"Coefficient (normalized height): {model.coef_[0]:.6f}")
+    print(f"Coefficient (normalized weight): {model.coef_[1]:.6f}")
+    print(f"R² score:                        {model.score(X_scaled, y):.6f}")
+    print()
+    print("Equation (using normalized features):")
     print(
         f"  40yd = {model.intercept_:.4f} "
-        f"+ ({model.coef_[0]:.4f} × height) "
-        f"+ ({model.coef_[1]:.4f} × weight)"
+        f"+ ({model.coef_[0]:.4f} × normalized_height) "
+        f"+ ({model.coef_[1]:.4f} × normalized_weight)"
     )
 
 
